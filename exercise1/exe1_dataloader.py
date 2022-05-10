@@ -19,6 +19,10 @@ class TokenSeqDataset(Dataset):
         return None
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, int]:
+        key_list = list(self.data.keys())
+        key = key_list[index]
+        sequence = self.data[key]
+
         return None
 
     def __len__(self) -> int:

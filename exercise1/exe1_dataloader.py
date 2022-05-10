@@ -28,7 +28,9 @@ class TokenSeqDataset(Dataset):
         sequence = self.data[key]
         if len(sequence) > self.max_num_res:
             sequence = sequence[0:self.max_num_res]
-        return tensor, 0
+        token_ids, att_mask = self.tokenize(sequence)
+        embedding = self.embedd(token_ids,att_mask)
+        return embedding, 0
 
     def __len__(self) -> int:
         return len(self.data)

@@ -10,7 +10,7 @@ class TokenSeqDataset(Dataset):
     def __init__(self, fasta_path: Path, labels_dict: Dict[str, int], max_num_residues: int, protbert_cache: Path, device: torch.device):
         self.protbert = None
         self.tokenizer = None
-        self.data = None
+        self.data = self.parse_fasta_input(fasta_path)
 
     def load_tokenizer(self) -> BertTokenizer:
         return None
@@ -22,7 +22,7 @@ class TokenSeqDataset(Dataset):
         return None
 
     def __len__(self) -> int:
-        return 0
+        return len(self.data)
 
     def tokenize(self, seq: str) -> Tuple[torch.Tensor, torch.Tensor]:
         return None

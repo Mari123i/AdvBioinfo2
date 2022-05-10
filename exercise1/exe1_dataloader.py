@@ -31,6 +31,7 @@ class TokenSeqDataset(Dataset):
         return None
 
     def parse_fasta_input(self, input_file: Path) -> Dict[str, str]:
+
         return None
 
 

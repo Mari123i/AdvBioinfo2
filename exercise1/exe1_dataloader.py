@@ -43,7 +43,7 @@ class TokenSeqDataset(Dataset):
 
     def embedd(self, tokens: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
         with torch.no_grad():
-            embedding = model(input_ids=input_ids, attention_mask=attention_mask)[0]
+            embedding = model(input_ids=tokens, attention_mask=attention_mask)[0]
         embedding = embedding.cpu().numpy()
         return embedding
 

@@ -8,9 +8,13 @@ from typing import Dict, Tuple, List
 
 class TokenSeqDataset(Dataset):
     def __init__(self, fasta_path: Path, labels_dict: Dict[str, int], max_num_residues: int, protbert_cache: Path, device: torch.device):
-        self.protbert = self.load_model()
+        self.model = self.load_model()
         self.tokenizer = self.load_tokenizer()
         self.data = self.parse_fasta_input(fasta_path)
+        self.device = device
+        self.max_num_residues=max_num_residues
+        self.protbert_cache=protbert_cache#
+
 
     def load_tokenizer(self) -> BertTokenizer:
         loaded_tokenizer = BertTokenizer.from_pretrained('Rostlab/prot_bert_bfd', do_lower_case=False )
@@ -36,14 +40,14 @@ class TokenSeqDataset(Dataset):
         return len(self.data)
 
     def tokenize(self, seq: str) -> Tuple[torch.Tensor, torch.Tensor]:
-        ids = tokenizer.batch_encode_plus(seq, add_special_tokens=True, pad_to_max_length=True)
-        input_ids = torch.tensor(ids['input_ids']).to(device)
-        attention_mask = torch.tensor(ids['attention_mask']).to(device)
+        ids = self.tokenizer.batch_encode_plus(seq, add_special_tokens=True, pad_to_max_length=True)
+        input_ids = torch.tensor(ids['input_ids']).to(self.device)
+        attention_mask = torch.tensor(ids['attention_mask']).to(self.device)
         return input_ids, attention_mask
 
     def embedd(self, tokens: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
         with torch.no_grad():
-            embedding = model(input_ids=tokens, attention_mask=attention_mask)[0]
+            embedding = self.model(input_ids=tokens, attention_mask=attention_mask)[0]
         embedding = embedding.cpu().numpy()
         return embedding
 
@@ -61,6 +65,8 @@ def collate_paired_sequences(data: List[Tuple[torch.Tensor, int]]) -> Tuple[torc
     ints =[x[1] for x in data]
     stacked_tensors=torch.stack(tensors)
     int_tensor = torch.as_tensor(ints)
+    int_tensor= int_tensor.view([-1,1])
+    print((stacked_tensors,int_tensor))
     return (stacked_tensors,int_tensor)
 
 
@@ -71,3 +77,4 @@ def get_dataloader(fasta_path: Path, labels_dict: Dict[str, int], batch_size: in
     dataloader =DataLoader(dataset=tokenDataset,batch_size=batch_size,shuffle=True,collate_fn=collate_paired_sequences)
     return dataloader
 
+collate_paired_sequences([[torch.Tensor([2, 1, 3.5]), 1], [torch.Tensor([4, 4.5, 2.1]), 0], [torch.tensor([5, 5, 9]), 1]])

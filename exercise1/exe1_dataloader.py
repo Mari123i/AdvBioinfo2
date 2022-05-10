@@ -32,7 +32,12 @@ class TokenSeqDataset(Dataset):
         return None
 
     def parse_fasta_input(self, input_file: Path) -> Dict[str, str]:
-        return None
+        fasta_dict = {}
+        inputs = Fasta(input_file)
+        for key in inputs.keys():
+            fasta_dict[key] = inputs[key]
+
+        return fasta_dict
 
 
 def collate_paired_sequences(data: List[Tuple[torch.Tensor, int]]) -> Tuple[torch.Tensor, torch.Tensor]:

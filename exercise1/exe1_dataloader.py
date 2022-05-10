@@ -36,11 +36,16 @@ class TokenSeqDataset(Dataset):
         return len(self.data)
 
     def tokenize(self, seq: str) -> Tuple[torch.Tensor, torch.Tensor]:
-        return None
+        ids = tokenizer.batch_encode_plus(seq, add_special_tokens=True, pad_to_max_length=True)
+        input_ids = torch.tensor(ids['input_ids']).to(device)
+        attention_mask = torch.tensor(ids['attention_mask']).to(device)
+        return input_ids, attention_mask
 
     def embedd(self, tokens: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
-        print("hey")
-        return None
+        with torch.no_grad():
+            embedding = model(input_ids=input_ids, attention_mask=attention_mask)[0]
+        embedding = embedding.cpu().numpy()
+        return embedding
 
     def parse_fasta_input(self, input_file: Path) -> Dict[str, str]:
         fasta_dict = {}

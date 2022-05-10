@@ -12,8 +12,8 @@ class TokenSeqDataset(Dataset):
         self.tokenizer = self.load_tokenizer()
         self.data = self.parse_fasta_input(fasta_path)
         self.device = device
-        self.max_num_residues=max_num_residues
-        self.protbert_cache=protbert_cache#
+        self.max_num_residues = max_num_residues
+        self.protbert_cache = protbert_cache
 
 
     def load_tokenizer(self) -> BertTokenizer:

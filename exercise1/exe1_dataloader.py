@@ -28,6 +28,7 @@ class TokenSeqDataset(Dataset):
         return None
 
     def embedd(self, tokens: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+        print("hey")
         return None
 
     def parse_fasta_input(self, input_file: Path) -> Dict[str, str]:

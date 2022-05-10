@@ -12,6 +12,7 @@ class TokenSeqDataset(Dataset):
         self.tokenizer = self.load_tokenizer()
         self.data = self.parse_fasta_input(fasta_path)
         self.device = device
+        self.labels_dict = labels_dict
         self.max_num_residues = max_num_residues
         self.protbert_cache = protbert_cache
 
@@ -34,7 +35,7 @@ class TokenSeqDataset(Dataset):
             sequence = sequence[0:self.max_num_res]
         token_ids, att_mask = self.tokenize(sequence)
         embedding = self.embedd(token_ids,att_mask)
-        return embedding, 0
+        return embedding, self.labels_dict[key]
 
     def __len__(self) -> int:
         return len(self.data)

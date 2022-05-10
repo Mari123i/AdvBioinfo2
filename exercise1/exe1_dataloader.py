@@ -8,15 +8,19 @@ from typing import Dict, Tuple, List
 
 class TokenSeqDataset(Dataset):
     def __init__(self, fasta_path: Path, labels_dict: Dict[str, int], max_num_residues: int, protbert_cache: Path, device: torch.device):
-        self.protbert = None
-        self.tokenizer = None
+        self.protbert = self.load_model()
+        self.tokenizer = self.load_tokenizer()
         self.data = self.parse_fasta_input(fasta_path)
 
     def load_tokenizer(self) -> BertTokenizer:
-        return None
+        loaded_tokenizer = BertTokenizer.from_pretrained('Rostlab/prot_bert_bfd', do_lower_case=False )
+        return loaded_tokenizer
 
     def load_model(self) -> BertModel:
-        return None
+        loaded_model = BertModel.from_pretrained("Rostlab/prot_bert_bfd")
+        loaded_model = loaded_model.to(self.device)
+        loaded_model = loaded_model.eval()
+        return loaded_model
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, int]:
         key_list = list(self.data.keys())

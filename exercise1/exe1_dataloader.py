@@ -27,7 +27,7 @@ class TokenSeqDataset(Dataset):
         key = key_list[index]
         sequence = self.data[key]
 
-        return None
+        return tensor, 0
 
     def __len__(self) -> int:
         return len(self.data)

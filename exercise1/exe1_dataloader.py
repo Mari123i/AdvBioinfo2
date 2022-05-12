@@ -33,7 +33,7 @@ class TokenSeqDataset(Dataset):
         key = key_list[index]
         sequence = self.data[key]
         if len(sequence) > self.max_num_residues:
-            sequence = sequence[0:self.max_num_residues]
+            sequence = sequence[:self.max_num_residues]
         token_ids, att_mask = self.tokenize(sequence)
         embedding = self.embedd(token_ids,att_mask)
         return embedding, self.labels_dict[key]

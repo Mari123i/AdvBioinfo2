@@ -8,21 +8,22 @@ from typing import Dict, Tuple, List
 
 class TokenSeqDataset(Dataset):
     def __init__(self, fasta_path: Path, labels_dict: Dict[str, int], max_num_residues: int, protbert_cache: Path, device: torch.device):
-        self.model = self.load_model()
-        self.tokenizer = self.load_tokenizer()
-        self.data = self.parse_fasta_input(fasta_path)
         self.device = device
         self.labels_dict = labels_dict
         self.max_num_residues = max_num_residues
         self.protbert_cache = protbert_cache
+        self.model = self.load_model()
+        self.tokenizer = self.load_tokenizer()
+        self.data = self.parse_fasta_input(fasta_path)
+
 
 
     def load_tokenizer(self) -> BertTokenizer:
-        loaded_tokenizer = BertTokenizer.from_pretrained('Rostlab/prot_bert_bfd', do_lower_case=False )
+        loaded_tokenizer = BertTokenizer.from_pretrained('Rostlab/prot_bert_bfd', do_lower_case=False, cache_dir=self.protbert_cache)
         return loaded_tokenizer
 
     def load_model(self) -> BertModel:
-        loaded_model = BertModel.from_pretrained("Rostlab/prot_bert_bfd")
+        loaded_model = BertModel.from_pretrained("Rostlab/prot_bert_bfd", cache_dir=self.protbert_cache)
         loaded_model = loaded_model.to(self.device)
         loaded_model = loaded_model.eval()
         return loaded_model
@@ -31,8 +32,8 @@ class TokenSeqDataset(Dataset):
         key_list = list(self.data.keys())
         key = key_list[index]
         sequence = self.data[key]
-        if len(sequence) > self.max_num_res:
-            sequence = sequence[0:self.max_num_res]
+        if len(sequence) > self.max_num_residues:
+            sequence = sequence[0:self.max_num_residues]
         token_ids, att_mask = self.tokenize(sequence)
         embedding = self.embedd(token_ids,att_mask)
         return embedding, self.labels_dict[key]
@@ -41,7 +42,7 @@ class TokenSeqDataset(Dataset):
         return len(self.data)
 
     def tokenize(self, seq: str) -> Tuple[torch.Tensor, torch.Tensor]:
-        ids = self.tokenizer.batch_encode_plus(seq, add_special_tokens=True, pad_to_max_length=True)
+        ids = self.tokenizer.batch_encode_plus(seq, add_special_tokens=True, max_length=max_num_residues+2,pad_to_max_length=True)
         input_ids = torch.tensor(ids['input_ids']).to(self.device)
         attention_mask = torch.tensor(ids['attention_mask']).to(self.device)
         return input_ids, attention_mask
@@ -49,12 +50,12 @@ class TokenSeqDataset(Dataset):
     def embedd(self, tokens: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
         with torch.no_grad():
             embedding = self.model(input_ids=tokens, attention_mask=attention_mask)[0]
-        embedding = embedding.cpu().numpy()
+        embedding = torch.mean(embedding,1)
         return embedding
 
     def parse_fasta_input(self, input_file: Path) -> Dict[str, str]:
         fasta_dict = {}
-        inputs = Fasta(input_file)
+        inputs = Fasta(str(input_file))
         for key in inputs.keys():
             fasta_dict[key] = inputs[key]
 
